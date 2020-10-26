@@ -22,15 +22,21 @@ class VehicleInputHandlingSystem : SystemBase
             .WithoutBurst()
             .WithStructuralChanges()
             .WithAll<ActiveVehicle>()
-            .ForEach((ref VehicleSpeed speed, ref VehicleSteering steering, in VehicleCameraSettings cameraSettings, in VehicleCameraReferences references) =>
+            .ForEach((ref VehicleSpeed speed, ref VehicleSteering steering, ref VehicleFuel fuel, ref VehicleOn deadSwitch, in VehicleCameraSettings cameraSettings, in VehicleCameraReferences references) =>
             {
                 float x = input.Steering.x;
-                float a = input.Throttle;
+                //JimK - set throttle to full as input was not being read.
+                // float a = input.Throttle;
+                float a = 1.0f;
                 float z = input.Looking.x;
 
-                var newSpeed = a * speed.TopSpeed;
+                //JimK - deadSwitch variable to stop vehicle. 
+                float onOff = deadSwitch.deadSwitch;
+
+                var newSpeed = a * speed.TopSpeed * onOff;
                 speed.DriveEngaged = (byte)(newSpeed == 0f ? 0 : 1);
                 speed.DesiredSpeed = math.lerp(speed.DesiredSpeed, newSpeed, speed.Damping);
+
 
                 var newSteeringAngle = x * steering.MaxSteeringAngle;
                 steering.DesiredSteeringAngle = math.lerp(steering.DesiredSteeringAngle, newSteeringAngle, steering.Damping);
